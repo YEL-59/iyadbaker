@@ -18,7 +18,7 @@ const Navbar = () => {
     <header className="w-full">
       {/* Top bar */}
       <div className="bg-[var(--color-topbar)] text-white text-xs sm:text-sm">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-2 sm:flex-row">
+        <div className="container mx-auto flex  flex-col items-center justify-between gap-2 px-4 py-2 sm:flex-row">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-6">
             <div className="flex items-center gap-2">
               <svg
@@ -70,7 +70,7 @@ const Navbar = () => {
 
       {/* Main navbar */}
       <div className="bg-[var(--color-navbar)] text-white">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-3 md:flex-row">
+        <div className="container mx-auto flex  flex-col items-center justify-between gap-4 px-4 py-3 md:flex-row">
           <div className="text-center md:text-left">
             <p className="text-lg font-semibold leading-tight">Leadsnsaas</p>
             <p className="text-xs font-medium text-white/80">Your Pipeline Supercharged</p>

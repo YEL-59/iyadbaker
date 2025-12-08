@@ -1,0 +1,14 @@
+import React from 'react'
+
+const Trading = () => {
+    return (
+        <div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+                <path d="M46 12L27 31L17 21L2 36" stroke="#FACC15" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M34 12H46V24" stroke="#FACC15" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </div>
+    )
+}
+
+export default Trading
