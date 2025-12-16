@@ -1,5 +1,7 @@
 import Layout from "@/layouts/Layout";
 import About from "@/pages/aboutus/About";
+import AllServices from "@/pages/allservices/AllServices";
+import ServiceDetails from "@/pages/servicedetails/ServiceDetails";
 import Home from "@/pages/home/Home";
 import { createBrowserRouter } from "react-router";
 
@@ -8,9 +10,10 @@ export const router = createBrowserRouter([
     path: "/",
     element: <Layout />,
     children: [
-
       { index: true, element: <Home /> },
-      { path: "/about", element: <About /> }
+      { path: "/about", element: <About /> },
+      { path: "/services", element: <AllServices /> },
+      { path: "/services/:slug", element: <ServiceDetails /> }
     ]
   },
 ]);
