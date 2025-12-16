@@ -71,9 +71,15 @@ button:focus-visible {
 
 @import "tw-animate-css";
 
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Font Families */
+  --font-poppins: "Poppins", sans-serif;
+  --font-inter: "Inter", sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
 
