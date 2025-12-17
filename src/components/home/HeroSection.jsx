@@ -8,7 +8,7 @@ import Trading from "@/assets/svg/trading";
 const HeroSection = () => {
     return (
         <section className="bg-[#e7f1ff] px-4 pt-12 ">
-            <div className="container mx-auto flex  flex-col items-center gap-10 md:flex-row md:gap-12 ">
+            <div className="container mx-auto flex  flex-col items-center gap-10 md:flex-row md:gap-12">
                 {/* Left content */}
                 <div className="w-full md:w-1/2">
                     <div className="space-y-6">
@@ -35,8 +35,8 @@ const HeroSection = () => {
                             </Button>
                         </div>
 
-                        <div className="flex flex-wrap justify-center items-center align-middle gap-3 max-w-xl">
-                            <div className="pt-4 text-xs font-semibold text-slate-600 max-w-[40px]">
+                        <div className="flex flex-wrap justify-start  gap-3 max-w-xl">
+                            <div className="pt-4 text-xs font-semibold text-slate-600 max-w-[140px]">
                                 Trusted by the world&apos;s biggest brands
                             </div>
                             <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 sm:gap-6">
@@ -71,8 +71,7 @@ const HeroSection = () => {
                                 them, and I will come back again thanks”
                             </div>
                         </div>
-                        {/* i want this div potiotion is left side 
-                     */}
+
                         <div className="flex justify-end items-end">
                             {/*  make a round border with border-2 border-gray-300 */}
                             <div className="w-20 h-20  rounded-full border-2 border-gray-300  bg-[var(--color-navbar)] flex items-center justify-center">

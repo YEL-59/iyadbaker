@@ -1,4 +1,19 @@
 import React from "react";
+import { Link } from "react-router";
+
+const usefulLinks = [
+  { label: "Home", path: "/" },
+  { label: "About Us", path: "/about" },
+  { label: "Services", path: "/services" },
+  { label: "Pricing", path: "/pricing" },
+  { label: "Contact Us", path: "/contact" },
+  { label: "Get Started", path: "/get-started" },
+];
+
+const legalLinks = [
+  { label: "Terms of Use", path: "/terms-and-conditions" },
+  { label: "Privacy Policy", path: "/privacy-policy" },
+];
 
 const Footer = () => {
   return (
@@ -7,7 +22,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand Column */}
           <div className="space-y-3">
-            <p className="text-base font-bold text-white">Leadsnsaas</p>
+            <Link to="/" className="text-base font-bold text-white">Leadsnsaas</Link>
             <p className="text-[13px] italic text-white/70">Your Pipeline Supercharged</p>
             <p className="text-[12px] leading-relaxed text-white/60">
               Running a service business is demanding—managing technicians,
@@ -20,17 +35,15 @@ const Footer = () => {
           <div className="space-y-4">
             <p className="text-sm font-semibold text-white">Useful links</p>
             <div className="flex flex-col gap-2">
-              {["Home", "About Us", "Services", "Pricing", "Contact Us", "Get Started"].map(
-                (item) => (
-                  <a
-                    key={item}
-                    href="#"
-                    className="text-[13px] text-white/60 transition hover:text-white"
-                  >
-                    {item}
-                  </a>
-                )
-              )}
+              {usefulLinks.map((item) => (
+                <Link
+                  key={item.label}
+                  to={item.path}
+                  className="text-[13px] text-white/60 transition hover:text-white"
+                >
+                  {item.label}
+                </Link>
+              ))}
             </div>
           </div>
 
@@ -38,14 +51,14 @@ const Footer = () => {
           <div className="space-y-4">
             <p className="text-sm font-semibold text-white">Legal</p>
             <div className="flex flex-col gap-2">
-              {["Terms of Use", "Privacy Policy"].map((item) => (
-                <a
-                  key={item}
-                  href="#"
+              {legalLinks.map((item) => (
+                <Link
+                  key={item.label}
+                  to={item.path}
                   className="text-[13px] text-white/60 transition hover:text-white"
                 >
-                  {item}
-                </a>
+                  {item.label}
+                </Link>
               ))}
             </div>
           </div>

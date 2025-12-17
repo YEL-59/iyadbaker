@@ -15,7 +15,7 @@ const Home = () => {
       <ServicesSection />
       <ChooseSection />
       <Performance />
-      <PriceSection />
+      {/* <PriceSection /> */}
       <FaqSection />
     </>
   );
