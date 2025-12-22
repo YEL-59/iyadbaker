@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router'
-import { useVerifyOtp } from '../../hook/auth.hook.js'
+import { useVerifyEmail, useResendOtp } from '../../hook/auth.hook'
 
-const VerifyOTP = () => {
+const VerifyEmail = () => {
     const [searchParams] = useSearchParams()
     const email = searchParams.get('email')
-    
-    const { form, mutate, isPending } = useVerifyOtp()
+
+    const { mutate: verifyEmail, isPending: isVerifying } = useVerifyEmail()
+    const { mutate: resendOtp, isPending: isResending } = useResendOtp()
 
     const [otp, setOtp] = useState(['', '', '', ''])
     const [timer, setTimer] = useState(60)
@@ -55,13 +56,15 @@ const VerifyOTP = () => {
         e.preventDefault()
         const otpValue = otp.join('')
         if (email && otpValue.length === 4) {
-             mutate({ email, otp: otpValue })
+            verifyEmail({ email, otp: otpValue })
         }
     }
 
     const handleResend = () => {
-        setTimer(60)
-        // Resend logic here (optional: could import useResendOtp if needed for password flow too)
+        if (email) {
+            resendOtp(email)
+            setTimer(60)
+        }
     }
 
     return (
@@ -83,18 +86,18 @@ const VerifyOTP = () => {
                     <div className="flex justify-center mb-6">
                         <div className="w-16 h-16 bg-[var(--color-accent)]/20 rounded-full flex items-center justify-center">
                             <svg className="w-8 h-8 text-[var(--color-navbar)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
                         </div>
                     </div>
 
                     <div className="text-center mb-8">
                         <h2 className="font-poppins text-[28px] font-bold text-[var(--color-navbar)] mb-2">
-                            Verify Code
+                            Verify Email
                         </h2>
                         <p className="font-poppins text-[14px] text-slate-500">
                             Enter the 4-digit code sent to <br/>
-                            <span className="font-semibold">{email || 'your email'}</span>
+                            <span className="font-semibold">{email}</span>
                         </p>
                     </div>
 
@@ -127,9 +130,10 @@ const VerifyOTP = () => {
                                 <button
                                     type="button"
                                     onClick={handleResend}
-                                    className="font-poppins text-[14px] text-[var(--color-navbar)] font-semibold hover:underline"
+                                    disabled={isResending}
+                                    className="font-poppins text-[14px] text-[var(--color-navbar)] font-semibold hover:underline disabled:opacity-50"
                                 >
-                                    Resend Code
+                                    {isResending ? 'Sending...' : 'Resend Code'}
                                 </button>
                             )}
                         </div>
@@ -137,16 +141,16 @@ const VerifyOTP = () => {
                         {/* Submit */}
                         <button
                             type="submit"
-                            disabled={otp.some(d => !d) || isPending}
+                            disabled={otp.some(d => !d) || isVerifying}
                             className="w-full py-3.5 bg-[var(--color-navbar)] text-white font-poppins text-[15px] font-semibold rounded-lg hover:bg-[var(--color-navbar)]/90 transition-colors shadow-lg shadow-[var(--color-navbar)]/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                         >
-                             {isPending ? (
+                            {isVerifying ? (
                                 <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
                             ) : (
-                                'Verify Code'
+                                'Verify Email'
                             )}
                         </button>
                     </form>
@@ -166,4 +170,4 @@ const VerifyOTP = () => {
     )
 }
 
-export default VerifyOTP
+export default VerifyEmail

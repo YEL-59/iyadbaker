@@ -1,14 +1,22 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router'
+import { useForgotPassword } from '../../hook/auth.hook'
 
 const ForgotPassword = () => {
-    const [email, setEmail] = useState('')
-    const [isSubmitted, setIsSubmitted] = useState(false)
+    const { form, mutate, isPending } = useForgotPassword()
+    const { register, handleSubmit, formState: { errors } } = form
+    
+    // We can rely on the hook to navigate to verify-otp on success.
+    // Or we case use state if we wanted to show the manual "Check your email" screen here.
+    // The previous design had an `isSubmitted` state to show a success message.
+    // The hook in `auth.hook.js` navigates to `/verify-otp` on success.
+    // So we don't need the local `isSubmitted` state if we follow the hook's flow.
+    // However, if we want to keep the UI consistent with the original design (showing "Check Your Email" here),
+    // we should update the hook to NOT navigate, OR update this component to rely on navigation.
+    // Given the hook navigates, I will remove the local success state to avoid conflict/duplication.
 
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        console.log('Reset password for:', email)
-        setIsSubmitted(true)
+    const onSubmit = (data) => {
+        mutate(data)
     }
 
     return (
@@ -26,7 +34,6 @@ const ForgotPassword = () => {
 
                 {/* Card */}
                 <div className="bg-white rounded-2xl shadow-xl p-8">
-                    {!isSubmitted ? (
                         <>
                             {/* Icon */}
                             <div className="flex justify-center mb-6">
@@ -46,7 +53,7 @@ const ForgotPassword = () => {
                                 </p>
                             </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-5">
+                            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                                 {/* Email */}
                                 <div>
                                     <label className="block font-poppins text-[13px] font-medium text-slate-700 mb-2">
@@ -55,62 +62,36 @@ const ForgotPassword = () => {
                                     <div className="relative">
                                         <input
                                             type="email"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
+                                            {...register("email")}
                                             placeholder="you@example.com"
-                                            className="w-full px-4 py-3 pl-11 border border-slate-200 rounded-lg font-poppins text-[14px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)] transition-all"
+                                            className={`w-full px-4 py-3 pl-11 border rounded-lg font-poppins text-[14px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)] transition-all ${errors.email ? 'border-red-500' : 'border-slate-200'}`}
                                         />
                                         <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                         </svg>
                                     </div>
+                                    {errors.email && (
+                                        <p className="mt-1 text-xs text-red-500 font-poppins">{errors.email.message}</p>
+                                    )}
                                 </div>
 
                                 {/* Submit */}
                                 <button
                                     type="submit"
-                                    className="w-full py-3.5 bg-[var(--color-navbar)] text-white font-poppins text-[15px] font-semibold rounded-lg hover:bg-[var(--color-navbar)]/90 transition-colors shadow-lg shadow-[var(--color-navbar)]/30"
+                                    disabled={isPending}
+                                    className="w-full py-3.5 bg-[var(--color-navbar)] text-white font-poppins text-[15px] font-semibold rounded-lg hover:bg-[var(--color-navbar)]/90 transition-colors shadow-lg shadow-[var(--color-navbar)]/30 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
                                 >
-                                    Send Reset Code
+                                     {isPending ? (
+                                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    ) : (
+                                        'Send Reset Code'
+                                    )}
                                 </button>
                             </form>
                         </>
-                    ) : (
-                        <>
-                            {/* Success State */}
-                            <div className="flex justify-center mb-6">
-                                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                                    <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                    </svg>
-                                </div>
-                            </div>
-
-                            <div className="text-center mb-8">
-                                <h2 className="font-poppins text-[28px] font-bold text-[var(--color-navbar)] mb-2">
-                                    Check Your Email
-                                </h2>
-                                <p className="font-poppins text-[14px] text-slate-500">
-                                    We've sent a verification code to <br />
-                                    <span className="font-semibold text-[var(--color-navbar)]">{email}</span>
-                                </p>
-                            </div>
-
-                            <Link
-                                to="/verify-otp"
-                                className="block w-full py-3.5 bg-[var(--color-navbar)] text-white font-poppins text-[15px] font-semibold rounded-lg hover:bg-[var(--color-navbar)]/90 transition-colors shadow-lg shadow-[var(--color-navbar)]/30 text-center"
-                            >
-                                Enter Verification Code
-                            </Link>
-
-                            <button
-                                onClick={() => setIsSubmitted(false)}
-                                className="w-full mt-4 py-3 text-slate-600 font-poppins text-[14px] hover:text-[var(--color-navbar)] transition-colors"
-                            >
-                                Didn't receive the email? <span className="font-semibold underline">Resend</span>
-                            </button>
-                        </>
-                    )}
 
                     {/* Back to Sign In */}
                     <div className="mt-8 text-center">
