@@ -1,17 +1,27 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { servicesData } from '@/data/servicesData'
+import { useServices } from '@/hook/service.hook'
 
 const Services = () => {
     const navigate = useNavigate()
+    const [page, setPage] = useState(1)
+    const perPage = 5
     const [bookingSuccess, setBookingSuccess] = useState(null)
+
+    const { data: response, isLoading, isError } = useServices({
+        per_page: perPage,
+        page: page
+    })
+
+    const services = response?.data?.data || []
+    const pagination = response?.data || {}
 
     const handleBookNow = (service) => {
         const newBooking = {
             id: Date.now().toString(),
-            serviceSlug: service.slug,
-            serviceTitle: service.title,
-            serviceImage: service.heroImage,
+            serviceId: service.id,
+            serviceTitle: service.name,
+            serviceImage: service.image,
             status: 'pending',
             createdAt: new Date().toISOString()
         }
@@ -20,7 +30,7 @@ const Services = () => {
         const existingBookings = JSON.parse(localStorage.getItem('bookings') || '[]')
 
         // Check if already booked
-        const alreadyBooked = existingBookings.some(b => b.serviceSlug === service.slug)
+        const alreadyBooked = existingBookings.some(b => b.serviceId === service.id)
         if (alreadyBooked) {
             navigate('/my-bookings')
             return
@@ -29,11 +39,27 @@ const Services = () => {
         localStorage.setItem('bookings', JSON.stringify([...existingBookings, newBooking]))
 
         // Show success message briefly then navigate
-        setBookingSuccess(service.title)
+        setBookingSuccess(service.name)
         setTimeout(() => {
             setBookingSuccess(null)
             navigate('/my-bookings')
         }, 1000)
+    }
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--color-navbar)]"></div>
+            </div>
+        )
+    }
+
+    if (isError) {
+        return (
+            <div className="text-center py-20 text-red-500 font-poppins">
+                Failed to load services. Please try again later.
+            </div>
+        )
     }
 
     return (
@@ -46,7 +72,7 @@ const Services = () => {
 
                 {/* Services List */}
                 <div className="space-y-16">
-                    {servicesData.map((service, index) => (
+                    {services.map((service, index) => (
                         <div
                             key={service.id}
                             className={`flex flex-col lg:flex-row items-center gap-10 ${index % 2 !== 0 ? 'lg:flex-row-reverse' : ''
@@ -55,8 +81,8 @@ const Services = () => {
                             {/* Image */}
                             <div className="flex-1">
                                 <img
-                                    src={service.heroImage}
-                                    alt={service.title}
+                                    src={service.image}
+                                    alt={service.name}
                                     className="w-full max-w-full aspect-[652/458] rounded-[14px] object-cover shadow-lg"
                                 />
                             </div>
@@ -64,29 +90,32 @@ const Services = () => {
                             {/* Content */}
                             <div className="flex-1 space-y-5">
                                 <h2 className="font-poppins text-[28px] font-bold text-[var(--color-navbar)]">
-                                    {service.title}
+                                    {service.name}
                                 </h2>
 
-                                <p className="font-poppins text-[16px] font-normal leading-[25px] text-slate-600">
-                                    {service.heroDescription}
-                                </p>
+                                <div 
+                                    className="font-poppins text-[16px] font-normal leading-[25px] text-slate-600 line-clamp-4"
+                                    dangerouslySetInnerHTML={{ __html: service.description }}
+                                />
 
-                                <div className="space-y-3">
-                                    <h3 className="font-poppins text-[16px] font-bold text-[var(--color-navbar)]">
-                                        What We Provide
-                                    </h3>
-                                    <ul className="space-y-2">
-                                        {service.whatYouGet.features.map((feature, idx) => (
-                                            <li
-                                                key={idx}
-                                                className="font-poppins text-[14px] font-normal leading-[22px] text-slate-600 flex items-start gap-2"
-                                            >
-                                                <span className="text-slate-400 mt-0.5">•</span>
-                                                <span>{feature}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
+                                {service.how_it_works && service.how_it_works.length > 0 && (
+                                    <div className="space-y-3">
+                                        <h3 className="font-poppins text-[16px] font-bold text-[var(--color-navbar)]">
+                                            How It Works
+                                        </h3>
+                                        <ul className="space-y-2">
+                                            {service.how_it_works.map((item, idx) => (
+                                                <li
+                                                    key={idx}
+                                                    className="font-poppins text-[14px] font-normal leading-[22px] text-slate-600 flex items-start gap-2"
+                                                >
+                                                    <span className="text-slate-400 mt-0.5">•</span>
+                                                    <span><strong>{item.name}:</strong> {item.description}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
 
                                 {/* Buttons */}
                                 <div className="flex flex-wrap gap-4 pt-2">
@@ -106,7 +135,7 @@ const Services = () => {
                                         Pricing
                                     </Link>
                                     <Link
-                                        to={`/services/${service.slug}`}
+                                        to={`/services/${service.id}`}
                                         className="px-6 py-2.5 border-2 border-[var(--color-accent)] text-[var(--color-navbar)] font-poppins text-[14px] font-semibold rounded-lg hover:bg-[var(--color-accent)]/10 transition-colors"
                                     >
                                         Learn more
@@ -116,6 +145,43 @@ const Services = () => {
                         </div>
                     ))}
                 </div>
+
+                {/* Pagination */}
+                {pagination.last_page > 1 && (
+                    <div className="mt-20 flex justify-center items-center gap-4">
+                        <button
+                            onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                            disabled={page === 1}
+                            className="px-6 py-2 rounded-lg border border-slate-200 font-poppins text-[14px] font-medium transition-all hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Previous
+                        </button>
+                        
+                        <div className="flex items-center gap-2">
+                            {[...Array(pagination.last_page)].map((_, i) => (
+                                <button
+                                    key={i + 1}
+                                    onClick={() => setPage(i + 1)}
+                                    className={`w-10 h-10 rounded-lg font-poppins text-[14px] font-medium transition-all ${
+                                        page === i + 1 
+                                        ? 'bg-[var(--color-navbar)] text-white' 
+                                        : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                                    }`}
+                                >
+                                    {i + 1}
+                                </button>
+                            ))}
+                        </div>
+
+                        <button
+                            onClick={() => setPage(prev => Math.min(prev + 1, pagination.last_page))}
+                            disabled={page === pagination.last_page}
+                            className="px-6 py-2 rounded-lg border border-slate-200 font-poppins text-[14px] font-medium transition-all hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Success Toast */}

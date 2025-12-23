@@ -41,3 +41,31 @@ export const resetPasswordSchema = z.object({
   message: "Passwords do not match",
   path: ["password_confirmation"],
 });
+export const contactSchema = z.object({
+  first_name: z.string().min(1, "First name is required"),
+  last_name: z.string().optional(),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  message: z.string().min(10, "Message must be at least 10 characters").max(2000),
+  privacy_policy: z.boolean().refine(val => val === true, {
+    message: "You must agree to the privacy policy",
+  }),
+});
+
+export const updateProfileSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  phone: z.string().nullable().optional(),
+  address: z.string().nullable().optional(),
+  about: z.string().nullable().optional(),
+  website: z.string().url("Invalid URL").nullable().optional().or(z.literal('')),
+  birthday: z.string().nullable().optional(),
+});
+
+export const updatePasswordSchema = z.object({
+  old_password: z.string().min(6, "Old password must be at least 6 characters"),
+  password: z.string().min(6, "New password must be at least 6 characters"),
+  password_confirmation: z.string().min(6, "Password confirmation must be at least 6 characters"),
+}).refine((data) => data.password === data.password_confirmation, {
+  message: "Passwords do not match",
+  path: ["password_confirmation"],
+});

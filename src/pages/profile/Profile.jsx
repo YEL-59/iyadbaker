@@ -1,32 +1,101 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { updateProfileSchema, updatePasswordSchema } from '@/lib/schemas'
+import { useUserInfo, useUpdateProfile, useUpdatePassword } from '@/hook/auth.hook'
 
 const Profile = () => {
-    // Fake user data
-    const [user, setUser] = useState({
-        name: "John Doe",
-        email: "john.doe@example.com",
-        phone: "+1 (555) 123-4567",
-        company: "Acme Corporation",
-        location: "New York, USA",
-        joinedDate: "December 2024",
-        avatar: null
-    })
+    const { data: userResponse, isLoading: userLoading, isError: userError } = useUserInfo()
+    const user = userResponse?.data
+    
+    const { mutate: updateProfile, isPending: isUpdatingProfile } = useUpdateProfile()
+    const { mutate: updatePassword, isPending: isUpdatingPassword } = useUpdatePassword()
 
     const [isEditing, setIsEditing] = useState(false)
-    const [editForm, setEditForm] = useState(user)
+    const [showPasswordModal, setShowPasswordModal] = useState(false)
 
-    // Stats data
-    const stats = [
-        { label: "Total Bookings", value: "12", icon: "📋" },
-        { label: "Active Services", value: "3", icon: "✨" },
-        { label: "Completed", value: "9", icon: "✅" },
-        { label: "Pending", value: "2", icon: "⏳" },
-    ]
+    // File Upload Handlers
+    const handleFileUpload = (e, type) => {
+        const file = e.target.files[0]
+        if (!file) return
 
-    const handleSave = () => {
-        setUser(editForm)
-        setIsEditing(false)
+        const formData = new FormData()
+        formData.append(type, file)
+        
+        // Use the same updateProfile hook but with FormData
+        updateProfile(formData)
+    }
+
+    // Profile Form
+    const {
+        register: registerProfile,
+        handleSubmit: handleSubmitProfile,
+        reset: resetProfile,
+        formState: { errors: profileErrors }
+    } = useForm({
+        resolver: zodResolver(updateProfileSchema)
+    })
+
+    // Password Form
+    const {
+        register: registerPassword,
+        handleSubmit: handleSubmitPassword,
+        reset: resetPassword,
+        formState: { errors: passwordErrors }
+    } = useForm({
+        resolver: zodResolver(updatePasswordSchema)
+    })
+
+    // Sync form with user data when editing starts
+    useEffect(() => {
+        if (isEditing && user) {
+            resetProfile({
+                name: user.name || '',
+                phone: user.phone || '',
+                address: user.address || '',
+                about: user.about || '',
+                website: user.website || '',
+                birthday: user.birthday || '',
+            })
+        }
+    }, [isEditing, user, resetProfile])
+
+    const onProfileSubmit = (data) => {
+        updateProfile(data, {
+            onSuccess: (res) => {
+                if (res.status) {
+                    setIsEditing(false)
+                }
+            }
+        })
+    }
+
+    const onPasswordSubmit = (data) => {
+        updatePassword(data, {
+            onSuccess: (res) => {
+                if (res.status) {
+                    setShowPasswordModal(false)
+                    resetPassword()
+                }
+            }
+        })
+    }
+
+    if (userLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--color-navbar)]"></div>
+            </div>
+        )
+    }
+
+    if (userError || !user) {
+        return (
+            <div className="text-center py-20 text-red-500 font-poppins">
+                Failed to load profile. Please sign in again.
+            </div>
+        )
     }
 
     return (
@@ -35,16 +104,59 @@ const Profile = () => {
                 {/* Header Card */}
                 <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-8">
                     {/* Cover Image */}
-                    <div className="h-40 bg-gradient-to-r from-[var(--color-navbar)] via-[#1a4a8f] to-[var(--color-topbar)] relative">
-                        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iNCIvPjwvZz48L2c+PC9zdmc+')] opacity-50"></div>
+                    <div className="h-40 bg-gradient-to-r from-[var(--color-navbar)] via-[#1a4a8f] to-[var(--color-topbar)] relative group cursor-pointer">
+                        <input
+                            type="file"
+                            id="cover-upload"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={(e) => handleFileUpload(e, 'cover_photo')}
+                        />
+                        <label htmlFor="cover-upload" className="absolute inset-0 cursor-pointer">
+                            {user.cover_photo ? (
+                                <img src={user.cover_photo} alt="Cover" className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iNCIvPjwvZz48L2c+PC9zdmc+')] opacity-50"></div>
+                            )}
+                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <span className="text-white text-sm font-semibold flex items-center gap-2 bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    Change Cover
+                                </span>
+                            </div>
+                        </label>
                     </div>
 
                     {/* Profile Info */}
                     <div className="px-8 pb-8 -mt-16 relative">
                         <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6">
                             {/* Avatar */}
-                            <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-[var(--color-accent)] to-yellow-400 flex items-center justify-center text-[var(--color-navbar)] text-5xl font-bold shadow-xl border-4 border-white">
-                                {user.name.charAt(0).toUpperCase()}
+                            <div className="relative group">
+                                <input
+                                    type="file"
+                                    id="avatar-upload"
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={(e) => handleFileUpload(e, 'avatar')}
+                                />
+                                <label htmlFor="avatar-upload" className="block relative cursor-pointer">
+                                    <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-[var(--color-accent)] to-yellow-400 flex items-center justify-center text-[var(--color-navbar)] text-5xl font-bold shadow-xl border-4 border-white overflow-hidden relative">
+                                        {user.avatar ? (
+                                            <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            user.name.charAt(0).toUpperCase()
+                                        )}
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </label>
                             </div>
 
                             {/* User Info */}
@@ -58,9 +170,18 @@ const Profile = () => {
                                     </svg>
                                     {user.email}
                                 </p>
-                                <p className="font-poppins text-[13px] text-slate-400 mt-1">
-                                    Member since {user.joinedDate}
-                                </p>
+                                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-2">
+                                    {user.role && (
+                                        <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[11px] font-bold uppercase tracking-wider rounded-full border border-blue-100">
+                                            {user.role}
+                                        </span>
+                                    )}
+                                    <span className={`px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-full border ${
+                                        user.status === 'active' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-600 border-red-100'
+                                    }`}>
+                                        {user.status}
+                                    </span>
+                                </div>
                             </div>
 
                             {/* Edit Button */}
@@ -71,36 +192,18 @@ const Profile = () => {
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
-                                {isEditing ? 'Cancel' : 'Edit Profile'}
+                                {isEditing ? 'Cancel Edit' : 'Edit Profile'}
                             </button>
                         </div>
                     </div>
                 </div>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    {stats.map((stat, index) => (
-                        <div
-                            key={index}
-                            className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 text-center hover:shadow-md transition-shadow"
-                        >
-                            <span className="text-3xl mb-2 block">{stat.icon}</span>
-                            <p className="font-poppins text-[28px] font-bold text-[var(--color-navbar)]">
-                                {stat.value}
-                            </p>
-                            <p className="font-poppins text-[13px] text-slate-500">
-                                {stat.label}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Profile Details */}
                     <div className="lg:col-span-2">
-                        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-                            <h2 className="font-poppins text-[18px] font-bold text-[var(--color-navbar)] mb-6 flex items-center gap-2">
-                                <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+                            <h2 className="font-poppins text-[20px] font-bold text-[var(--color-navbar)] mb-8 flex items-center gap-2">
+                                <svg className="w-5 h-5 text-[var(--color-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
                                 Personal Information
@@ -108,29 +211,18 @@ const Profile = () => {
 
                             {isEditing ? (
                                 /* Edit Form */
-                                <div className="space-y-5">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                <form onSubmit={handleSubmitProfile(onProfileSubmit)} className="space-y-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                         <div>
                                             <label className="block font-poppins text-[13px] font-medium text-slate-700 mb-2">
                                                 Full Name
                                             </label>
                                             <input
                                                 type="text"
-                                                value={editForm.name}
-                                                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                                                className="w-full px-4 py-3 border border-slate-200 rounded-xl font-poppins text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)]"
+                                                {...registerProfile("name")}
+                                                className={`w-full px-4 py-3 border rounded-xl font-poppins text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)] transition-all ${profileErrors.name ? 'border-red-500' : 'border-slate-200'}`}
                                             />
-                                        </div>
-                                        <div>
-                                            <label className="block font-poppins text-[13px] font-medium text-slate-700 mb-2">
-                                                Email Address
-                                            </label>
-                                            <input
-                                                type="email"
-                                                value={editForm.email}
-                                                onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                                                className="w-full px-4 py-3 border border-slate-200 rounded-xl font-poppins text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)]"
-                                            />
+                                            {profileErrors.name && <p className="text-red-500 text-xs mt-1">{profileErrors.name.message}</p>}
                                         </div>
                                         <div>
                                             <label className="block font-poppins text-[13px] font-medium text-slate-700 mb-2">
@@ -138,83 +230,122 @@ const Profile = () => {
                                             </label>
                                             <input
                                                 type="tel"
-                                                value={editForm.phone}
-                                                onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                                                className="w-full px-4 py-3 border border-slate-200 rounded-xl font-poppins text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)]"
+                                                {...registerProfile("phone")}
+                                                className="w-full px-4 py-3 border border-slate-200 rounded-xl font-poppins text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)] transition-all"
                                             />
                                         </div>
                                         <div>
                                             <label className="block font-poppins text-[13px] font-medium text-slate-700 mb-2">
-                                                Company
+                                                Birthday
+                                            </label>
+                                            <input
+                                                type="date"
+                                                {...registerProfile("birthday")}
+                                                className="w-full px-4 py-3 border border-slate-200 rounded-xl font-poppins text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)] transition-all"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block font-poppins text-[13px] font-medium text-slate-700 mb-2">
+                                                Website
                                             </label>
                                             <input
                                                 type="text"
-                                                value={editForm.company}
-                                                onChange={(e) => setEditForm({ ...editForm, company: e.target.value })}
-                                                className="w-full px-4 py-3 border border-slate-200 rounded-xl font-poppins text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)]"
+                                                {...registerProfile("website")}
+                                                placeholder="https://example.com"
+                                                className={`w-full px-4 py-3 border rounded-xl font-poppins text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)] transition-all ${profileErrors.website ? 'border-red-500' : 'border-slate-200'}`}
+                                            />
+                                            {profileErrors.website && <p className="text-red-500 text-xs mt-1">{profileErrors.website.message}</p>}
+                                        </div>
+                                        <div className="sm:col-span-2">
+                                            <label className="block font-poppins text-[13px] font-medium text-slate-700 mb-2">
+                                                Address
+                                            </label>
+                                            <input
+                                                type="text"
+                                                {...registerProfile("address")}
+                                                className="w-full px-4 py-3 border border-slate-200 rounded-xl font-poppins text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)] transition-all"
                                             />
                                         </div>
                                         <div className="sm:col-span-2">
                                             <label className="block font-poppins text-[13px] font-medium text-slate-700 mb-2">
-                                                Location
+                                                About Me
                                             </label>
-                                            <input
-                                                type="text"
-                                                value={editForm.location}
-                                                onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
-                                                className="w-full px-4 py-3 border border-slate-200 rounded-xl font-poppins text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)]"
-                                            />
+                                            <textarea
+                                                {...registerProfile("about")}
+                                                rows={4}
+                                                className="w-full px-4 py-3 border border-slate-200 rounded-xl font-poppins text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)] transition-all resize-none"
+                                                placeholder="Tell us a bit about yourself..."
+                                            ></textarea>
                                         </div>
                                     </div>
 
-                                    <div className="flex gap-3 pt-4">
+                                    <div className="flex gap-4 pt-4 border-t border-slate-100">
                                         <button
-                                            onClick={handleSave}
-                                            className="px-6 py-2.5 bg-[var(--color-navbar)] text-white font-poppins text-[14px] font-semibold rounded-xl hover:bg-[var(--color-navbar)]/90 transition-colors"
+                                            type="submit"
+                                            disabled={isUpdatingProfile}
+                                            className="px-8 py-3 bg-[var(--color-navbar)] text-white font-poppins text-[14px] font-bold rounded-xl hover:bg-[var(--color-navbar)]/90 transition-all shadow-lg shadow-[var(--color-navbar)]/20 disabled:opacity-50 flex items-center gap-2"
                                         >
+                                            {isUpdatingProfile && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
                                             Save Changes
                                         </button>
                                         <button
-                                            onClick={() => {
-                                                setEditForm(user)
-                                                setIsEditing(false)
-                                            }}
-                                            className="px-6 py-2.5 border border-slate-200 text-slate-700 font-poppins text-[14px] font-semibold rounded-xl hover:bg-slate-50 transition-colors"
+                                            type="button"
+                                            onClick={() => setIsEditing(false)}
+                                            className="px-8 py-3 border border-slate-200 text-slate-600 font-poppins text-[14px] font-bold rounded-xl hover:bg-slate-50 transition-all font-medium"
                                         >
                                             Cancel
                                         </button>
                                     </div>
-                                </div>
+                                </form>
                             ) : (
                                 /* Display Info */
-                                <div className="space-y-5">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                        <div className="p-4 bg-slate-50 rounded-xl">
-                                            <p className="font-poppins text-[12px] text-slate-400 uppercase tracking-wider mb-1">Full Name</p>
+                                <div className="space-y-8">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                        <div className="p-5 bg-slate-50/50 rounded-2xl border border-slate-100">
+                                            <p className="font-poppins text-[12px] text-slate-400 font-bold uppercase tracking-wider mb-2">Full Name</p>
                                             <p className="font-poppins text-[15px] font-semibold text-slate-800">{user.name}</p>
                                         </div>
-                                        <div className="p-4 bg-slate-50 rounded-xl">
-                                            <p className="font-poppins text-[12px] text-slate-400 uppercase tracking-wider mb-1">Email</p>
+                                        <div className="p-5 bg-slate-50/50 rounded-2xl border border-slate-100">
+                                            <p className="font-poppins text-[12px] text-slate-400 font-bold uppercase tracking-wider mb-2">Email</p>
                                             <p className="font-poppins text-[15px] font-semibold text-slate-800">{user.email}</p>
                                         </div>
-                                        <div className="p-4 bg-slate-50 rounded-xl">
-                                            <p className="font-poppins text-[12px] text-slate-400 uppercase tracking-wider mb-1">Phone</p>
-                                            <p className="font-poppins text-[15px] font-semibold text-slate-800">{user.phone}</p>
+                                        <div className="p-5 bg-slate-50/50 rounded-2xl border border-slate-100">
+                                            <p className="font-poppins text-[12px] text-slate-400 font-bold uppercase tracking-wider mb-2">Phone</p>
+                                            <p className="font-poppins text-[15px] font-semibold text-slate-800">{user.phone || 'Not provided'}</p>
                                         </div>
-                                        <div className="p-4 bg-slate-50 rounded-xl">
-                                            <p className="font-poppins text-[12px] text-slate-400 uppercase tracking-wider mb-1">Company</p>
-                                            <p className="font-poppins text-[15px] font-semibold text-slate-800">{user.company}</p>
+                                        <div className="p-5 bg-slate-50/50 rounded-2xl border border-slate-100">
+                                            <p className="font-poppins text-[12px] text-slate-400 font-bold uppercase tracking-wider mb-2">Birthday</p>
+                                            <p className="font-poppins text-[15px] font-semibold text-slate-800">{user.birthday || 'Not provided'}</p>
                                         </div>
-                                        <div className="p-4 bg-slate-50 rounded-xl sm:col-span-2">
-                                            <p className="font-poppins text-[12px] text-slate-400 uppercase tracking-wider mb-1">Location</p>
+                                        <div className="p-5 bg-slate-50/50 rounded-2xl border border-slate-100 sm:col-span-2">
+                                            <p className="font-poppins text-[12px] text-slate-400 font-bold uppercase tracking-wider mb-2">Website</p>
+                                            {user.website ? (
+                                                <a href={user.website} target="_blank" rel="noopener noreferrer" className="font-poppins text-[15px] font-semibold text-blue-600 hover:underline flex items-center gap-2">
+                                                    {user.website}
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                    </svg>
+                                                </a>
+                                            ) : (
+                                                <p className="font-poppins text-[15px] font-semibold text-slate-500">Not provided</p>
+                                            )}
+                                        </div>
+                                        <div className="p-5 bg-slate-50/50 rounded-2xl border border-slate-100 sm:col-span-2">
+                                            <p className="font-poppins text-[12px] text-slate-400 font-bold uppercase tracking-wider mb-2">Location</p>
                                             <p className="font-poppins text-[15px] font-semibold text-slate-800 flex items-center gap-2">
-                                                <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="w-4 h-4 text-[var(--color-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 </svg>
-                                                {user.location}
+                                                {user.address || 'Not provided'}
                                             </p>
                                         </div>
+                                        {user.about && (
+                                            <div className="p-5 bg-slate-50/50 rounded-2xl border border-slate-100 sm:col-span-2">
+                                                <p className="font-poppins text-[12px] text-slate-400 font-bold uppercase tracking-wider mb-2">About Me</p>
+                                                <p className="font-poppins text-[14px] text-slate-600 leading-relaxed italic">{user.about}</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -273,21 +404,6 @@ const Profile = () => {
                                         <p className="font-poppins text-[12px] text-slate-400">Check our plans</p>
                                     </div>
                                 </Link>
-
-                                <Link
-                                    to="/contact"
-                                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group"
-                                >
-                                    <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p className="font-poppins text-[14px] font-semibold text-slate-700">Contact Support</p>
-                                        <p className="font-poppins text-[12px] text-slate-400">Get help from us</p>
-                                    </div>
-                                </Link>
                             </div>
                         </div>
 
@@ -297,29 +413,107 @@ const Profile = () => {
                                 Account Settings
                             </h3>
                             <div className="space-y-3">
-                                <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors text-left">
-                                    <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                                    </svg>
-                                    <span className="font-poppins text-[14px] text-slate-700">Change Password</span>
-                                </button>
-                                <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors text-left">
-                                    <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                                    </svg>
-                                    <span className="font-poppins text-[14px] text-slate-700">Notifications</span>
-                                </button>
-                                <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-50 transition-colors text-left text-red-600">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                    <span className="font-poppins text-[14px] font-medium">Delete Account</span>
+                                <button 
+                                    onClick={() => setShowPasswordModal(true)}
+                                    className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors text-left group"
+                                >
+                                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-[var(--color-navbar)] group-hover:text-white transition-all">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="font-poppins text-[14px] font-semibold text-slate-700">Change Password</p>
+                                        <p className="font-poppins text-[12px] text-slate-400">Update your security</p>
+                                    </div>
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Change Password Modal */}
+            {showPasswordModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4 backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 animate-fade-in relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-2 bg-[var(--color-navbar)]"></div>
+                        
+                        <div className="text-center mb-8">
+                            <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-100">
+                                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            </div>
+                            <h3 className="font-poppins text-[24px] font-bold text-[var(--color-navbar)] mb-2">
+                                Change Password
+                            </h3>
+                            <p className="font-poppins text-[14px] text-slate-500">
+                                Enter your current and new password below
+                            </p>
+                        </div>
+
+                        <form onSubmit={handleSubmitPassword(onPasswordSubmit)} className="space-y-5">
+                            <div>
+                                <label className="block font-poppins text-[13px] font-medium text-slate-700 mb-2">
+                                    Old Password
+                                </label>
+                                <input
+                                    type="password"
+                                    {...registerPassword("old_password")}
+                                    className={`w-full px-4 py-3 border rounded-xl font-poppins text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 transition-all ${passwordErrors.old_password ? 'border-red-500' : 'border-slate-200'}`}
+                                />
+                                {passwordErrors.old_password && <p className="text-red-500 text-xs mt-1">{passwordErrors.old_password.message}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block font-poppins text-[13px] font-medium text-slate-700 mb-2">
+                                    New Password
+                                </label>
+                                <input
+                                    type="password"
+                                    {...registerPassword("password")}
+                                    className={`w-full px-4 py-3 border rounded-xl font-poppins text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 transition-all ${passwordErrors.password ? 'border-red-500' : 'border-slate-200'}`}
+                                />
+                                {passwordErrors.password && <p className="text-red-500 text-xs mt-1">{passwordErrors.password.message}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block font-poppins text-[13px] font-medium text-slate-700 mb-2">
+                                    Confirm New Password
+                                </label>
+                                <input
+                                    type="password"
+                                    {...registerPassword("password_confirmation")}
+                                    className={`w-full px-4 py-3 border rounded-xl font-poppins text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 transition-all ${passwordErrors.password_confirmation ? 'border-red-500' : 'border-slate-200'}`}
+                                />
+                                {passwordErrors.password_confirmation && <p className="text-red-500 text-xs mt-1">{passwordErrors.password_confirmation.message}</p>}
+                            </div>
+
+                            <div className="flex gap-4 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowPasswordModal(false)
+                                        resetPassword()
+                                    }}
+                                    className="flex-1 px-6 py-3 border border-slate-200 text-slate-600 font-poppins text-[14px] font-bold rounded-xl hover:bg-slate-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isUpdatingPassword}
+                                    className="flex-1 px-6 py-3 bg-[var(--color-navbar)] text-white font-poppins text-[14px] font-bold rounded-xl hover:bg-[var(--color-navbar)]/90 transition-all shadow-lg shadow-[var(--color-navbar)]/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    {isUpdatingPassword && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
+                                    Update
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </section>
     )
 }

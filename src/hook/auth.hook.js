@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,7 +11,9 @@ import {
   resendOtpSchema, 
   forgotPasswordSchema, 
   verifyOtpSchema, 
-  resetPasswordSchema 
+  resetPasswordSchema,
+  updateProfileSchema,
+  updatePasswordSchema
 } from "../lib/schemas";
 
 // Helper for error handling
@@ -256,5 +258,46 @@ export const useUserInfo = () => {
         },
         retry: 1,
         staleTime: 5 * 60 * 1000, // 5 minutes
+    });
+};
+
+// Update Profile
+export const useUpdateProfile = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (data) => {
+            const config = data instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
+            // Note: axios usually handles FormData automatically if headers are NOT explicitly set to application/json.
+            // But since our axiosPrivate has a default Content-Type: application/json, we might need to override it.
+            const res = await axiosPrivate.post("/auth/update-profile", data, config);
+            return res.data;
+        },
+        onSuccess: (data) => {
+            if (data?.status) {
+                toast.success(data?.message || "Profile updated successfully");
+                queryClient.invalidateQueries(["user-info"]);
+            } else {
+                toast.error(data?.message || "Failed to update profile");
+            }
+        },
+        onError: handleError,
+    });
+};
+
+// Update Password
+export const useUpdatePassword = () => {
+    return useMutation({
+        mutationFn: async (data) => {
+            const res = await axiosPrivate.post("/auth/update-password", data);
+            return res.data;
+        },
+        onSuccess: (data) => {
+            if (data?.status) {
+                toast.success(data?.message || "Password updated successfully");
+            } else {
+                toast.error(data?.message || "Failed to update password");
+            }
+        },
+        onError: handleError,
     });
 };

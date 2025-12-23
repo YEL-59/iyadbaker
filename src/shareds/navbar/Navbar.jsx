@@ -5,6 +5,8 @@ import twitterIcon from "@/assets/twiter.png";
 import linkedinIcon from "@/assets/linkdin.png";
 import instagramIcon from "@/assets/insta.png";
 
+import { useUserInfo } from "@/hook/auth.hook";
+
 const socialIcons = [
   { src: fbIcon, alt: "Facebook", url: "#" },
   { src: twitterIcon, alt: "Twitter", url: "#" },
@@ -24,17 +26,12 @@ const Navbar = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const { data: userInfo, isLoading } = useUserInfo();
 
-  // Fake user - always logged in for demo
-  const fakeUser = {
-    isLoggedIn: true,
-    name: "John Doe",
-    email: "john.doe@example.com",
-    avatar: null
-  };
-
-  const isLoggedIn = fakeUser.isLoggedIn;
-  const userName = fakeUser.name;
+  const user = userInfo?.data || userInfo;
+  const isLoggedIn = !!user;
+  const userName = user?.name || "User";
+  const userEmail = user?.email || "";
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -48,10 +45,10 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("userName");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setIsProfileOpen(false);
-    navigate("/sign-in");
+    window.location.reload(); // Simple way to reset query state and app state
   };
 
   return (
@@ -165,7 +162,7 @@ const Navbar = () => {
                     {/* User Info */}
                     <div className="px-4 py-3 border-b border-slate-100">
                       <p className="font-poppins text-[14px] font-semibold text-slate-800">{userName}</p>
-                      <p className="font-poppins text-[12px] text-slate-500">Welcome back!</p>
+                      <p className="font-poppins text-[12px] text-slate-500">{userEmail}</p>
                     </div>
 
                     {/* Menu Items */}

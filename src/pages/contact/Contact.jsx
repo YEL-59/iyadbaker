@@ -1,29 +1,38 @@
-import React, { useState } from 'react'
+import React from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { contactSchema } from '@/lib/schemas'
+import { useContactUs } from '@/hook/contact.hook'
 import contactImg from '@/assets/faq.png'
 
 const Contact = () => {
-    const [formData, setFormData] = useState({
-        fullName: '',
-        companyName: '',
-        email: '',
-        countryCode: 'US',
-        phoneNumber: '',
-        message: '',
-        agreeToPolicy: false
+    const { mutate, isPending } = useContactUs()
+    
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors }
+    } = useForm({
+        resolver: zodResolver(contactSchema),
+        defaultValues: {
+            first_name: '',
+            last_name: '',
+            email: '',
+            phone: '',
+            message: '',
+            privacy_policy: false
+        }
     })
 
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }))
-    }
-
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        console.log('Form submitted:', formData)
-        // Handle form submission here
+    const onSubmit = (data) => {
+        mutate(data, {
+            onSuccess: (res) => {
+                if (res.status) {
+                    reset()
+                }
+            }
+        })
     }
 
     return (
@@ -45,32 +54,29 @@ const Contact = () => {
                             Our friendly team would love to hear from you.
                         </p>
 
-                        <form onSubmit={handleSubmit} className="space-y-5">
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                             {/* Name Row */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block font-poppins text-[13px] font-medium text-slate-700 mb-2">
-                                        Full Name
+                                        First Name
                                     </label>
                                     <input
                                         type="text"
-                                        name="fullName"
-                                        value={formData.fullName}
-                                        onChange={handleChange}
-                                        placeholder="Full name"
-                                        className="w-full px-4 py-3 border border-slate-200 rounded-lg font-poppins text-[14px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)] transition-all"
+                                        {...register("first_name")}
+                                        placeholder="First name"
+                                        className={`w-full px-4 py-3 border rounded-lg font-poppins text-[14px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)] transition-all ${errors.first_name ? 'border-red-500' : 'border-slate-200'}`}
                                     />
+                                    {errors.first_name && <p className="text-red-500 text-xs mt-1">{errors.first_name.message}</p>}
                                 </div>
                                 <div>
                                     <label className="block font-poppins text-[13px] font-medium text-slate-700 mb-2">
-                                        Company name
+                                        Last Name (Optional)
                                     </label>
                                     <input
                                         type="text"
-                                        name="companyName"
-                                        value={formData.companyName}
-                                        onChange={handleChange}
-                                        placeholder="Apple.inc"
+                                        {...register("last_name")}
+                                        placeholder="Last name"
                                         className="w-full px-4 py-3 border border-slate-200 rounded-lg font-poppins text-[14px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)] transition-all"
                                     />
                                 </div>
@@ -83,12 +89,11 @@ const Contact = () => {
                                 </label>
                                 <input
                                     type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
+                                    {...register("email")}
                                     placeholder="you@company.com"
-                                    className="w-full px-4 py-3 border border-slate-200 rounded-lg font-poppins text-[14px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)] transition-all"
+                                    className={`w-full px-4 py-3 border rounded-lg font-poppins text-[14px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)] transition-all ${errors.email ? 'border-red-500' : 'border-slate-200'}`}
                                 />
+                                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
                             </div>
 
                             {/* Phone Number */}
@@ -96,30 +101,13 @@ const Contact = () => {
                                 <label className="block font-poppins text-[13px] font-medium text-slate-700 mb-2">
                                     Phone number
                                 </label>
-                                <div className="flex">
-                                    <select
-                                        name="countryCode"
-                                        value={formData.countryCode}
-                                        onChange={handleChange}
-                                        className="px-3 py-3 border border-slate-200 border-r-0 rounded-l-lg font-poppins text-[14px] text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)] transition-all"
-                                    >
-                                        <option value="US">US</option>
-                                        <option value="UK">UK</option>
-                                        <option value="CA">CA</option>
-                                        <option value="AU">AU</option>
-                                        <option value="DE">DE</option>
-                                        <option value="FR">FR</option>
-                                        <option value="IN">IN</option>
-                                    </select>
-                                    <input
-                                        type="tel"
-                                        name="phoneNumber"
-                                        value={formData.phoneNumber}
-                                        onChange={handleChange}
-                                        placeholder="+1 (555) 000-0000"
-                                        className="flex-1 px-4 py-3 border border-slate-200 rounded-r-lg font-poppins text-[14px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)] transition-all"
-                                    />
-                                </div>
+                                <input
+                                    type="tel"
+                                    {...register("phone")}
+                                    placeholder="+1 (555) 000-0000"
+                                    className={`w-full px-4 py-3 border rounded-lg font-poppins text-[14px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)] transition-all ${errors.phone ? 'border-red-500' : 'border-slate-200'}`}
+                                />
+                                {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
                             </div>
 
                             {/* Message */}
@@ -128,39 +116,47 @@ const Contact = () => {
                                     Message
                                 </label>
                                 <textarea
-                                    name="message"
-                                    value={formData.message}
-                                    onChange={handleChange}
+                                    {...register("message")}
                                     rows={4}
                                     placeholder="Tell us about your project..."
-                                    className="w-full px-4 py-3 border border-slate-200 rounded-lg font-poppins text-[14px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)] transition-all resize-none"
+                                    className={`w-full px-4 py-3 border rounded-lg font-poppins text-[14px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-navbar)]/20 focus:border-[var(--color-navbar)] transition-all resize-none ${errors.message ? 'border-red-500' : 'border-slate-200'}`}
                                 />
+                                {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message.message}</p>}
                             </div>
 
                             {/* Privacy Policy Checkbox */}
-                            <div className="flex items-start gap-3">
-                                <input
-                                    type="checkbox"
-                                    name="agreeToPolicy"
-                                    id="agreeToPolicy"
-                                    checked={formData.agreeToPolicy}
-                                    onChange={handleChange}
-                                    className="mt-1 w-4 h-4 rounded border-slate-300 text-[var(--color-navbar)] focus:ring-[var(--color-navbar)]"
-                                />
-                                <label htmlFor="agreeToPolicy" className="font-poppins text-[13px] text-slate-500 leading-relaxed">
-                                    I give ClevFox permission to contact me in response to my enquiry. I have read and accept the{' '}
-                                    <a href="#" className="text-[var(--color-navbar)] underline hover:text-[var(--color-navbar)]/80">
-                                        privacy policy
-                                    </a>.
-                                </label>
+                            <div className="flex flex-col gap-1">
+                                <div className="flex items-start gap-3">
+                                    <input
+                                        type="checkbox"
+                                        id="privacy_policy"
+                                        {...register("privacy_policy")}
+                                        className="mt-1 w-4 h-4 rounded border-slate-300 text-[var(--color-navbar)] focus:ring-[var(--color-navbar)]"
+                                    />
+                                    <label htmlFor="privacy_policy" className="font-poppins text-[13px] text-slate-500 leading-relaxed">
+                                        I give Leadsnsaas permission to contact me in response to my enquiry. I have read and accept the{' '}
+                                        <a href="#" className="text-[var(--color-navbar)] underline hover:text-[var(--color-navbar)]/80">
+                                            privacy policy
+                                        </a>.
+                                    </label>
+                                </div>
+                                {errors.privacy_policy && <p className="text-red-500 text-xs">{errors.privacy_policy.message}</p>}
                             </div>
 
                             {/* Submit Button */}
                             <button
                                 type="submit"
-                                className="w-full py-3.5 bg-[var(--color-accent)] text-[var(--color-navbar)] font-poppins text-[15px] font-semibold rounded-lg hover:bg-yellow-400 transition-colors shadow-lg shadow-[var(--color-accent)]/30"
+                                disabled={isPending}
+                                className="w-full py-3.5 bg-[var(--color-accent)] text-[var(--color-navbar)] font-poppins text-[15px] font-semibold rounded-lg hover:bg-yellow-400 transition-colors shadow-lg shadow-[var(--color-accent)]/30 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
                             >
-                                Send
+                                {isPending ? (
+                                    <svg className="animate-spin h-5 w-5 text-[var(--color-navbar)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                ) : (
+                                    'Send Message'
+                                )}
                             </button>
                         </form>
                     </div>
