@@ -42,11 +42,23 @@ export const resetPasswordSchema = z.object({
   path: ["password_confirmation"],
 });
 export const contactSchema = z.object({
-  first_name: z.string().min(1, "First name is required"),
-  last_name: z.string().optional(),
+  name: z.string().min(1, "Name is required"),
+  company_name: z.string().min(1, "Company name is required"),
   email: z.string().email("Invalid email address"),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
   message: z.string().min(10, "Message must be at least 10 characters").max(2000),
+  privacy_policy: z.boolean().refine(val => val === true, {
+    message: "You must agree to the privacy policy",
+  }),
+});
+
+export const getStartedSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  company_name: z.string().min(1, "Company name is required"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(1, "Phone number is required"),
+  lead_service_id: z.string().min(1, "Service selection is required"),
+  message: z.string().max(2000).optional(),
   privacy_policy: z.boolean().refine(val => val === true, {
     message: "You must agree to the privacy policy",
   }),

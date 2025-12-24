@@ -1,117 +1,65 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import Havac from "@/assets/svg/havac";
-import Constraction from "@/assets/svg/constraction";
-import Insurance from "@/assets/svg/insurance";
-import Lawfarm from "@/assets/svg/lawfarm";
-import RealEstate from "@/assets/svg/realestate";
-import { servicesData } from "@/data/servicesData";
-
-const services = [
-    {
-        title: "HVAC Leads",
-        slug: "hvac-leads",
-        description: "Homeowners actively looking for heating & cooling professionals.",
-        Icon: Havac,
-    },
-    {
-        title: "Construction Leads",
-        slug: "construction-leads",
-        description: "Real residential and commercial clients ready for bids.",
-        Icon: Constraction,
-    },
-    {
-        title: "Insurance Leads",
-        slug: "insurance-leads",
-        description: "Warm prospects looking for coverage options.",
-        Icon: Insurance,
-    },
-    {
-        title: "Real Estate Leads",
-        slug: "real-estate-leads",
-        description: "Buyers, sellers, and investors looking to move fast.",
-        Icon: RealEstate,
-    },
-    {
-        title: "Law Firm Leads",
-        slug: "law-firm-leads",
-        description: "Buyers, sellers, and investors looking to move fast.",
-        Icon: Lawfarm,
-    },
-];
+import { useServices } from "@/hook/service.hook";
 
 const ServicesSection = () => {
     const navigate = useNavigate();
     const [bookingSuccess, setBookingSuccess] = useState(null);
+    
+    // Fetch top 6 services for the home page
+    const { data: response, isLoading } = useServices({ per_page: 6 });
+    const services = response?.data?.data || [];
 
-    const handleBookNow = (service) => {
-        // Get full service data
-        const fullService = servicesData.find(s => s.slug === service.slug);
 
-        const newBooking = {
-            id: Date.now().toString(),
-            serviceSlug: service.slug,
-            serviceTitle: service.title,
-            serviceImage: fullService?.heroImage || null,
-            status: 'pending',
-            createdAt: new Date().toISOString()
-        };
 
-        // Save to localStorage
-        const existingBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    if (isLoading) {
+        return (
+            <div className="py-20 flex justify-center items-center bg-[#e7f1ff] dark:bg-slate-950/20">
+                <div className="w-10 h-10 border-4 border-[var(--color-navbar)]/20 border-t-[var(--color-navbar)] rounded-full animate-spin"></div>
+            </div>
+        );
+    }
 
-        // Check if already booked
-        const alreadyBooked = existingBookings.some(b => b.serviceSlug === service.slug);
-        if (alreadyBooked) {
-            navigate('/my-bookings');
-            return;
-        }
-
-        localStorage.setItem('bookings', JSON.stringify([...existingBookings, newBooking]));
-
-        // Show success message briefly then navigate
-        setBookingSuccess(service.title);
-        setTimeout(() => {
-            setBookingSuccess(null);
-            navigate('/my-bookings');
-        }, 1000);
-    };
+    if (services.length === 0) return null;
 
     return (
-        <section className="bg-[#e7f1ff] px-4 py-16">
+        <section className="bg-[#e7f1ff] dark:bg-slate-950/20 px-4 py-16 transition-colors duration-300">
             <div className="container mx-auto text-center">
-                <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+                <h2 className="font-poppins text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
                     Our Lead Generation Services
                 </h2>
 
-                <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 text-left">
                     {services.map((service) => (
                         <div
-                            key={service.title}
-                            className="flex h-full flex-col rounded-lg bg-white p-6 text-left shadow-sm transition-shadow hover:shadow-md"
+                            key={service.id}
+                            className="flex h-full flex-col rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm border border-slate-100 dark:border-slate-800 transition-all hover:shadow-lg dark:hover:border-slate-700 group"
                         >
-                            <div className="mb-10 text-[var(--color-navbar)]">
-                                <service.Icon />
+                            <div className="mb-6 h-[200px] w-full overflow-hidden rounded-lg">
+                                <img 
+                                    src={service.image} 
+                                    alt={service.name} 
+                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                />
                             </div>
-                            <h3 className="text-sm font-semibold text-slate-900">{service.title}</h3>
-                            <p className="mt-1 text-[11px] leading-relaxed text-slate-600">
-                                {service.description}
-                            </p>
-                            <div className="mt-4 flex items-center gap-3">
-                                <button
-                                    onClick={() => handleBookNow(service)}
-                                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-[var(--color-navbar)] text-white text-[11px] font-semibold rounded-md hover:bg-[var(--color-navbar)]/90 transition-colors"
-                                >
-                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                    </svg>
-                                    Book Now
-                                </button>
+                            
+                            <h3 className="font-poppins text-[18px] font-bold text-slate-900 dark:text-white line-clamp-1">
+                                {service.name}
+                            </h3>
+                            
+                            <div 
+                                className="mt-3 text-[13px] leading-relaxed text-slate-600 dark:text-slate-400 line-clamp-3 
+                                        prose-premium prose-p:text-[13px] prose-p:leading-relaxed prose-p:mb-0"
+                                dangerouslySetInnerHTML={{ __html: service.description }}
+                            />
+
+                            <div className="mt-6 flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800">
+                          
                                 <Link
-                                    to={`/services/${service.slug}`}
-                                    className="inline-flex items-center text-[11px] font-semibold text-[var(--color-navbar)] transition hover:opacity-80"
+                                    to={`/services/${service.id}`}
+                                    className="inline-flex items-center text-[12px] font-bold text-[var(--color-navbar)] dark:text-[var(--color-accent)] hover:underline decoration-2 underline-offset-4"
                                 >
-                                    Read More <span className="ml-1 text-lg leading-none">→</span>
+                                    Read More <span className="ml-1 text-base">→</span>
                                 </Link>
                             </div>
                         </div>
@@ -119,15 +67,7 @@ const ServicesSection = () => {
                 </div>
             </div>
 
-            {/* Success Toast */}
-            {bookingSuccess && (
-                <div className="fixed bottom-6 right-6 bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-fade-in z-50">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="font-poppins text-[14px] font-medium">{bookingSuccess} added to bookings!</span>
-                </div>
-            )}
+      
         </section>
     );
 };

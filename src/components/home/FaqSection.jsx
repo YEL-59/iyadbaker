@@ -6,48 +6,40 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion";
 import faqImg from "@/assets/faq.png";
-
-const faqs = [
-    {
-        question: "How much do you charge for pedicure ?",
-        answer:
-            "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its. The point of using lorem Ipsum is that it has a more-or-less normal distribution",
-    },
-    {
-        question: "What types of treatments do you offer?",
-        answer: "",
-    },
-    {
-        question: "How do i book my appointment ?",
-        answer: "",
-    },
-    {
-        question: "Can i cancel my appointment",
-        answer: "",
-    },
-];
+import { useFaqs } from "@/hook/home.hook";
 
 const FaqSection = () => {
+    const { data: response, isLoading } = useFaqs({ per_page: 50 });
+    const faqs = response?.data?.data || [];
+
+    if (isLoading) {
+        return (
+            <div className="py-20 flex justify-center items-center bg-background">
+                <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+            </div>
+        );
+    }
+
     return (
-        <section className="bg-white px-4 py-16">
+        <section className="bg-background px-4 py-16 transition-colors duration-300">
             <div className="container mx-auto grid items-start gap-10 lg:grid-cols-[1.1fr_0.9fr]">
                 <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-[var(--color-navbar)] sm:text-3xl max-w-md">
+                    <h2 className="text-2xl font-bold text-foreground sm:text-3xl max-w-md">
                         Frequently Asked Questions
                     </h2>
 
                     <Accordion type="single" collapsible defaultValue="item-1" className="space-y-3">
                         {faqs.map((faq, idx) => (
                             <AccordionItem
-                                key={faq.question}
+                                key={faq.id}
                                 value={`item-${idx + 1}`}
-                                className="overflow-hidden rounded-lg border border-[#b7d0ff] bg-[#cfe2ff]"
+                                className="overflow-hidden rounded-lg border border-[#b7d0ff] dark:border-slate-800 bg-[#cfe2ff] dark:bg-slate-900"
                             >
-                                <AccordionTrigger className="rounded-none bg-[#cfe2ff] px-4 py-3 text-[13px] font-semibold text-slate-800 hover:no-underline hover:bg-[#cfe2ff] data-[state=open]:bg-[#cfe2ff] [&>svg]:text-slate-600">
+                                <AccordionTrigger className="rounded-none bg-[#cfe2ff] dark:bg-slate-900 px-4 py-3 text-[13px] font-semibold text-slate-800 dark:text-slate-200 hover:no-underline hover:bg-[#cfe2ff] dark:hover:bg-slate-800 data-[state=open]:bg-[#cfe2ff] dark:data-[state=open]:bg-slate-800 [&>svg]:text-slate-600 dark:[&>svg]:text-slate-400 text-left">
                                     {faq.question}
                                 </AccordionTrigger>
                                 {faq.answer && (
-                                    <AccordionContent className="border-t border-[#b7d0ff] bg-white px-4 py-3 text-[12px] text-slate-600 leading-relaxed">
+                                    <AccordionContent className="border-t border-[#b7d0ff] dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-[12px] text-slate-600 dark:text-slate-400 leading-relaxed">
                                         {faq.answer}
                                     </AccordionContent>
                                 )}

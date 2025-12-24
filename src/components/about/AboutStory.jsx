@@ -1,37 +1,35 @@
 import React from 'react'
-// Add your story image to assets folder and update the import
-import storyImg from '@/assets/faq.png'
+import { useAboutOurStory } from '@/hook/about.hook'
 
 const AboutStory = () => {
+    const { data: response, isLoading } = useAboutOurStory()
+    const content = response?.data
+
+    if (isLoading) {
+        return (
+            <div className="py-20 flex justify-center items-center bg-[#E8F1FD]">
+                <div className="w-10 h-10 border-4 border-[var(--color-navbar)]/20 border-t-[var(--color-navbar)] rounded-full animate-spin"></div>
+            </div>
+        )
+    }
+
     return (
-        <section className="bg-[#E8F1FD] py-16 px-4">
+        <section className="bg-slate-50 dark:bg-slate-900/50 py-16 px-4 transition-colors duration-300">
             <div className="container mx-auto">
                 <div className="grid items-center gap-10 lg:grid-cols-2">
                     {/* Content */}
                     <div className="space-y-5 max-w-4xl">
-                        {/* Heading: Poppins, 36px, 700, line-height 118% */}
-                        <h2 className="font-poppins text-[36px] font-bold leading-[1.18] text-[var(--color-navbar)]">
-                            Our Story
-                        </h2>
-
-                        {/* Text: Poppins, 16px, 400, line-height 25px */}
-                        <p className="font-poppins text-[16px] font-normal leading-[25px] text-slate-600">
-                            Founded by researchers and entrepreneurs, we realized the immense potential of aligning academic brilliance with real-world needs. That's why we built, a platform designed to bridge the gap between ideas and impact. Was born out of a simple yet powerful idea.
-                        </p>
-
-                        <p className="font-poppins text-[16px] font-normal leading-[25px] text-slate-600">
-                            To give everyday items a second life while promoting sustainability and reducing waste. Derived from the Swahili word SOKO, meaning "market," and ROAM, symbolizing exploration, our platform creates a virtual marketplace where users can roam freely, discovering and trading second-hand treasures.
-                        </p>
-
-                        <p className="font-poppins text-[16px] font-normal leading-[25px] text-slate-600">
-                            Founded with a vision to connect communities across East Africa, SOKO-ROAM aims to make trading pre-loved goods simple, accessible, and impactful for everyone.
-                        </p>
+                        {/* Render HTML content from API with prose styling */}
+                        <div 
+                            className="prose-premium"
+                            dangerouslySetInnerHTML={{ __html: content?.description }}
+                        />
                     </div>
 
                     {/* Image */}
                     <div className="flex justify-center lg:justify-end">
                         <img
-                            src={storyImg}
+                            src={content?.image || '@/assets/faq.png'}
                             alt="Our story"
                             className="w-full max-w-full aspect-[652/458] rounded-xl object-cover shadow-lg"
                         />

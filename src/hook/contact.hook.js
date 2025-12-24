@@ -13,6 +13,24 @@ const handleError = (error) => {
     return message;
 };
 
+export const useGetStarted = () => {
+    return useMutation({
+        mutationFn: async (data) => {
+            const res = await axiosPrivate.post("/contact-us", data);
+            return res.data;
+        },
+        onSuccess: (data) => {
+            if (data?.status) {
+                toast.success(data?.message || "Message sent successfully!");
+            } else {
+                toast.error(data?.message || "Failed to send message");
+            }
+        },
+        onError: handleError,
+    });
+};
+
+
 export const useContactUs = () => {
     return useMutation({
         mutationFn: async (data) => {
