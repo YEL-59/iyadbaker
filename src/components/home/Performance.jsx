@@ -20,7 +20,7 @@ const stats = [
 
 const Performance = () => {
   return (
-    <section className="bg-[#e7f1ff] dark:bg-slate-950/20 px-4 py-14 transition-colors duration-300">
+    <section className="bg-[#E8F1FD] dark:bg-slate-950/20 px-4 py-14 transition-colors duration-300">
       <div className="container mx-auto text-center">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl leading-tight">
           Start building high performing website &

@@ -5,7 +5,7 @@ import Footer from "@/shareds/footer/Footer";
 import { useUserInfo } from "@/hook/auth.hook";
 
 const Layout = () => {
-  const { data: userInfo, isError } = useUserInfo();
+  const { data: userInfo } = useUserInfo();
 
   useEffect(() => {
     if (userInfo) {

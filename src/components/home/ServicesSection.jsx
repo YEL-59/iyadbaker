@@ -12,7 +12,7 @@ const ServicesSection = () => {
 
   if (isLoading) {
     return (
-      <div className="py-20 flex justify-center items-center bg-[#e7f1ff] dark:bg-slate-950/20">
+      <div className="py-20 flex justify-center items-center bg-[#E8F1FD] dark:bg-slate-950/20">
         <div className="w-10 h-10 border-4 border-[var(--color-navbar)]/20 border-t-[var(--color-navbar)] rounded-full animate-spin"></div>
       </div>
     );
@@ -21,7 +21,7 @@ const ServicesSection = () => {
   if (services.length === 0) return null;
 
   return (
-    <section className="bg-[#e7f1ff] dark:bg-slate-950/20 px-4 py-16 transition-colors duration-300">
+    <section className="bg-[#E8F1FD] dark:bg-slate-950/20 px-4 py-16 transition-colors duration-300">
       <div className="container mx-auto text-center">
         <h2 className="font-poppins text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
           Our Lead Generation Services
