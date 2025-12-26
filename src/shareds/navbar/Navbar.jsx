@@ -12,7 +12,7 @@ const socialIcons = [
   { src: fbIcon, alt: "Facebook", url: "#" },
   { src: twitterIcon, alt: "Twitter", url: "#" },
   { src: linkedinIcon, alt: "LinkedIn", url: "#" },
-  { src: instagramIcon, alt: "Instagram", url: "#" },
+  // { src: instagramIcon, alt: "Instagram", url: "#" },
 ];
 
 const navLinks = [
@@ -92,14 +92,16 @@ const Navbar = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <span className="hidden text-xs font-medium sm:inline">Follow us on</span>
+            <span className="hidden text-xs font-medium sm:inline">
+              Follow us on
+            </span>
             <div className="flex items-center gap-2">
               {socialIcons.map((icon) => (
                 <span
                   key={icon.alt}
                   className="grid h-7 w-7 place-items-center rounded-full bg-white/15 p-1"
                 >
-                  <img src={icon.src} alt={icon.alt} className="h-3.5 w-3.5" />
+                  <img src={icon.src} alt={icon.alt} className="h-5 w-5" />
                 </span>
               ))}
             </div>
@@ -111,8 +113,12 @@ const Navbar = () => {
       <div className="bg-[var(--color-navbar)] text-white border-b border-white/10">
         <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-4 py-3 md:flex-row">
           <Link to="/" className="text-center md:text-left">
-            <p className="text-lg font-semibold leading-tight text-white">Leadsnsaas</p>
-            <p className="text-xs font-medium text-white/80">Your Pipeline Supercharged</p>
+            <p className="text-lg font-semibold leading-tight text-white">
+              Leadsnsaas
+            </p>
+            <p className="text-xs font-medium text-white/80">
+              Your Pipeline Supercharged
+            </p>
           </Link>
 
           <nav className="flex flex-wrap items-center justify-center gap-6 lg:gap-8 text-sm font-medium text-white/90">
@@ -120,10 +126,10 @@ const Navbar = () => {
               <NavLink
                 key={link.label}
                 to={link.path}
-                className={({ isActive }) => 
+                className={({ isActive }) =>
                   `transition-all duration-300 hover:text-white py-1.5 relative ${
-                    isActive 
-                      ? "text-white after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-[var(--color-accent)]" 
+                    isActive
+                      ? "text-white after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-[var(--color-accent)]"
                       : "after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-white/0 hover:after:w-full hover:after:bg-white/20 transition-all after:transition-all"
                   }`
                 }
@@ -142,12 +148,32 @@ const Navbar = () => {
               aria-label="Toggle theme"
             >
               {theme === "light" ? (
-                <svg className="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                <svg
+                  className="w-5 h-5 group-hover:rotate-12 transition-transform"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                  />
                 </svg>
               ) : (
-                <svg className="w-5 h-5 group-hover:rotate-45 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l.707.707M6.343 6.343l.707-.707M14.5 12a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                <svg
+                  className="w-5 h-5 group-hover:rotate-45 transition-transform"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l.707.707M6.343 6.343l.707-.707M14.5 12a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+                  />
                 </svg>
               )}
             </button>
@@ -170,14 +196,23 @@ const Navbar = () => {
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--color-accent)] to-yellow-400 flex items-center justify-center text-[var(--color-navbar)] font-bold text-sm">
                     {userName.charAt(0).toUpperCase()}
                   </div>
-                  <span className="hidden sm:block text-sm font-medium text-white">{userName}</span>
+                  <span className="hidden sm:block text-sm font-medium text-white">
+                    {userName}
+                  </span>
                   <svg
-                    className={`w-4 h-4 transition-transform ${isProfileOpen ? "rotate-180" : ""} text-white`}
+                    className={`w-4 h-4 transition-transform ${
+                      isProfileOpen ? "rotate-180" : ""
+                    } text-white`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
 
@@ -186,8 +221,12 @@ const Navbar = () => {
                   <div className="absolute right-0 mt-2 w-56 rounded-xl bg-white dark:bg-slate-900 shadow-xl border border-slate-100 dark:border-slate-800 py-2 z-50 animate-fade-in text-slate-900 dark:text-white">
                     {/* User Info */}
                     <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
-                      <p className="font-poppins text-[14px] font-semibold text-slate-800 dark:text-white">{userName}</p>
-                      <p className="font-poppins text-[12px] text-slate-500 dark:text-slate-400">{userEmail}</p>
+                      <p className="font-poppins text-[14px] font-semibold text-slate-800 dark:text-white">
+                        {userName}
+                      </p>
+                      <p className="font-poppins text-[12px] text-slate-500 dark:text-slate-400">
+                        {userEmail}
+                      </p>
                     </div>
 
                     {/* Menu Items */}
@@ -197,10 +236,22 @@ const Navbar = () => {
                         onClick={() => setIsProfileOpen(false)}
                         className="flex items-center gap-3 px-4 py-2.5 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                       >
-                        <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        <svg
+                          className="w-5 h-5 text-slate-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                          />
                         </svg>
-                        <span className="font-poppins text-[14px]">My Bookings</span>
+                        <span className="font-poppins text-[14px]">
+                          My Bookings
+                        </span>
                       </Link>
 
                       <Link
@@ -208,10 +259,22 @@ const Navbar = () => {
                         onClick={() => setIsProfileOpen(false)}
                         className="flex items-center gap-3 px-4 py-2.5 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                       >
-                        <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        <svg
+                          className="w-5 h-5 text-slate-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          />
                         </svg>
-                        <span className="font-poppins text-[14px]">Profile</span>
+                        <span className="font-poppins text-[14px]">
+                          Profile
+                        </span>
                       </Link>
                     </div>
 
@@ -221,10 +284,22 @@ const Navbar = () => {
                         onClick={handleLogout}
                         className="flex items-center gap-3 px-4 py-2.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors w-full"
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                          />
                         </svg>
-                        <span className="font-poppins text-[14px] font-medium">Logout</span>
+                        <span className="font-poppins text-[14px] font-medium">
+                          Logout
+                        </span>
                       </button>
                     </div>
                   </div>
